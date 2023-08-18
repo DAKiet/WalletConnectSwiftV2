@@ -429,5 +429,11 @@ public final class SignClient: SignClientProtocol {
         networkingClient.socketConnectionStatusPublisher.sink { [weak self] status in
             self?.socketConnectionStatusPublisherSubject.send(status)
         }.store(in: &publishers)
+        
+        networkingClient.responseSwitchChainSubject.sink { [weak self] topic in
+            self?.sessionResponsePublisherSubject.send(
+                Response(id: .init(), topic: topic, chainId: nil, result: .response(AnyCodable(any: "wallet_switchEthereumChain")))
+            )
+        }.store(in: &publishers)
     }
 }

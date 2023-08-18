@@ -142,6 +142,9 @@ public class NetworkingInteractor: NetworkInteracting {
         let response = RPCResponse(id: requestId, error: error)
         try await respond(topic: topic, response: response, protocolMethod: protocolMethod, envelopeType: envelopeType)
     }
+    
+    // CUSTOM
+    public let responseSwitchChainSubject = PassthroughSubject<String, Never>()
 
     private func manageSubscription(_ topic: String, _ encodedEnvelope: String, _ publishedAt: Date) {
         if let (deserializedJsonRpcRequest, derivedTopic, decryptedPayload): (RPCRequest, String?, Data) = serializer.tryDeserialize(topic: topic, encodedEnvelope: encodedEnvelope) {
@@ -149,6 +152,8 @@ public class NetworkingInteractor: NetworkInteracting {
         } else if let (response, derivedTopic, _): (RPCResponse, String?, Data) = serializer.tryDeserialize(topic: topic, encodedEnvelope: encodedEnvelope) {
             handleResponse(topic: topic, response: response, publishedAt: publishedAt, derivedTopic: derivedTopic)
         } else {
+            // TODO: Support wallet_switchEthereumChain
+            responseSwitchChainSubject.send(topic)
             logger.debug("Networking Interactor - Received unknown object type from networking relay")
         }
     }
